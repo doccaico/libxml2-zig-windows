@@ -108,17 +108,15 @@ pub fn build(b: *std.Build) !void {
         "-Wpointer-arith",
         "-Wcast-align",
         "-Wwrite-strings",
-        "-Waggregate-return",
         "-Wstrict-prototypes",
         "-Wmissing-prototypes",
-        "-Wnested-externs",
-        "-Winline",
-        "-Wredundant-decls",
         "-Wno-long-long",
         "-Wno-format-extra-args",
-        //for remove errors...
+        // For remove compile errors...
+        // declaration of 'struct _stat' will not be visible outside of this function
+        // call to undeclared function '_wstat'; ISO C99 and later do not support implicit
+        // call to undeclared function '_stat'; ISO C99 and later do not support implicit
         "-Wno-implicit-function-declaration",
-        // "-Wno-int-conversion",
     });
 
     libxml2.addCSourceFiles(.{ .files = srcs, .flags = flags.items });

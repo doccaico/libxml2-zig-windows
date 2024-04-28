@@ -113,9 +113,9 @@ pub fn build(b: *std.Build) !void {
         "-Wno-long-long",
         "-Wno-format-extra-args",
         // For remove compile errors...
-        // declaration of 'struct _stat' will not be visible outside of this function
-        // call to undeclared function '_wstat'; ISO C99 and later do not support implicit
-        // call to undeclared function '_stat'; ISO C99 and later do not support implicit
+        // (xmlIO.c) declaration of 'struct _stat' will not be visible outside of this function
+        // (xmlIO.c) call to undeclared function '_wstat'; ISO C99 and later do not support implicit
+        // (xmlIO.c) call to undeclared function '_stat'; ISO C99 and later do not support implicit
         "-Wno-implicit-function-declaration",
     });
 

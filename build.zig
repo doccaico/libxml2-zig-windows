@@ -37,6 +37,7 @@ pub fn build(b: *std.Build) !void {
         .name = "libxml2",
         .target = target,
         .optimize = optimize,
+        .link_libc = true,
     });
 
     var flags = std.ArrayList([]const u8).init(b.allocator);
@@ -127,7 +128,6 @@ pub fn build(b: *std.Build) !void {
     libxml2.addIncludePath(.{ .path = override_include_dir });
     libxml2.addIncludePath(.{ .path = win32_include_dir });
     libxml2.linkSystemLibrary("ws2_32");
-    libxml2.linkLibC();
 
     b.installArtifact(libxml2);
 
@@ -138,6 +138,11 @@ pub fn build(b: *std.Build) !void {
             .name = "reader1",
             .path = "examples/reader1.zig",
             .desc = "Parse an XML file with an xmlReader",
+        },
+        .{
+            .name = "reader2",
+            .path = "examples/reader2.zig",
+            .desc = "Parse and validate an XML file with an xmlReader",
         },
     };
     for (examples) |example| {

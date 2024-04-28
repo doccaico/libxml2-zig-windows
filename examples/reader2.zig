@@ -33,7 +33,9 @@ fn streamFile(filename: [:0]const u8) !void {
     var reader: c.xmlTextReaderPtr = undefined;
     var ret: i32 = undefined;
 
-    reader = c.xmlReaderForFile(filename, null, 0) orelse {
+    reader = c.xmlReaderForFile(filename, null, c.XML_PARSE_DTDATTR |
+        c.XML_PARSE_NOENT |
+        c.XML_PARSE_DTDVALID) orelse {
         panic("Unable to open {s}\n", .{filename});
     };
 
@@ -41,6 +43,9 @@ fn streamFile(filename: [:0]const u8) !void {
     while (ret == 1) {
         try processNode(reader);
         ret = c.xmlTextReaderRead(reader);
+    }
+    if (c.xmlTextReaderIsValid(reader) != 1) {
+        panic("Document {s} does not validate\n", .{filename});
     }
     c.xmlFreeTextReader(reader);
     if (ret != 0) {

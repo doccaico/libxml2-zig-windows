@@ -151,6 +151,12 @@ pub fn build(b: *std.Build) !void {
             .desc = "Show how to extract subdocuments with xmlReader",
             .wrapper = "examples/reader3.c", // For FILE (stdio.h)
         },
+        .{
+            .name = "reader4",
+            .path = "examples/reader4.zig",
+            .desc = "Parse multiple XML files reusing an xmlReader",
+            .wrapper = "",
+        },
     };
     for (examples) |example| {
         const exe = b.addExecutable(.{

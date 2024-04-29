@@ -27,6 +27,7 @@ const Program = struct {
     name: []const u8,
     path: []const u8,
     desc: []const u8,
+    wrapper: []const u8,
 };
 
 pub fn build(b: *std.Build) !void {
@@ -136,11 +137,19 @@ pub fn build(b: *std.Build) !void {
             .name = "reader1",
             .path = "examples/reader1.zig",
             .desc = "Parse an XML file with an xmlReader",
+            .wrapper = "",
         },
         .{
             .name = "reader2",
             .path = "examples/reader2.zig",
             .desc = "Parse and validate an XML file with an xmlReader",
+            .wrapper = "",
+        },
+        .{
+            .name = "reader3",
+            .path = "examples/reader3.zig",
+            .desc = "Show how to extract subdocuments with xmlReader",
+            .wrapper = "examples/reader3.c", // For FILE (stdio.h)
         },
     };
     for (examples) |example| {
@@ -150,6 +159,11 @@ pub fn build(b: *std.Build) !void {
             .target = target,
             .optimize = optimize,
         });
+
+        if (example.wrapper.len != 0) {
+            exe.addIncludePath(.{ .path = "." });
+            exe.addCSourceFile(.{ .file = .{ .path = example.wrapper }, .flags = &.{} });
+        }
 
         exe.addIncludePath(.{ .path = "include" });
         exe.addIncludePath(.{ .path = include_dir });

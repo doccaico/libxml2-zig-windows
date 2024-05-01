@@ -1,5 +1,7 @@
 ## libxml2-zig-windows
 
+This binding tested on libxml2 2.12.6 and Zig master version. It's Windows only.
+
 #### Fetch
 ```sh
 $ zig fetch --save=libxml2 https://github.com/doccaico/libxml2-zig-windows/archive/<git-commit-hash>.tar.gz

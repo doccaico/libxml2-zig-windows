@@ -221,6 +221,12 @@ pub fn build(b: *std.Build) !void {
             .wrapper = "",
         },
         .{
+            .name = "parse4",
+            .path = "examples/parse4.zig",
+            .desc = "Parse an XML document chunk by chunk to a tree and free it",
+            .wrapper = "",
+        },
+        .{
             .name = "reader1",
             .path = "examples/reader1.zig",
             .desc = "Parse an XML file with an xmlReader",
@@ -236,7 +242,7 @@ pub fn build(b: *std.Build) !void {
             .name = "reader3",
             .path = "examples/reader3.zig",
             .desc = "Show how to extract subdocuments with xmlReader",
-            .wrapper = "examples/reader3.c", // For FILE (stdio.h)
+            .wrapper = "examples/reader3.c", // For stdout (stdio.h)
         },
         .{
             .name = "reader4",

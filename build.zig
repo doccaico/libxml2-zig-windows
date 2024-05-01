@@ -203,6 +203,12 @@ pub fn build(b: *std.Build) !void {
     const examples_step = b.step("examples", "Builds all the examples");
     const examples = [_]Program{
         .{
+            .name = "parse1",
+            .path = "examples/parse1.zig",
+            .desc = "Parse an XML file to a tree and free it",
+            .wrapper = "",
+        },
+        .{
             .name = "reader1",
             .path = "examples/reader1.zig",
             .desc = "Parse an XML file with an xmlReader",

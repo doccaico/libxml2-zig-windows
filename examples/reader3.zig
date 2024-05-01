@@ -1,13 +1,10 @@
 const std = @import("std");
 const panic = std.debug.panic;
-const io = std.io;
+const print = std.debug.print;
 
 const c = @cImport({
     @cInclude("examples/reader3.h");
 
-    @cDefine("LIBXML_READER_ENABLED", "1");
-    @cDefine("LIBXML_PATTERN_ENABLED", "1");
-    @cDefine("LIBXML_OUTPUT_ENABLED", "1");
     @cInclude("libxml/xmlreader.h");
 });
 
@@ -17,7 +14,7 @@ fn extractFile(filename: [:0]const u8, pattern: [:0]const u8) ?c.xmlDocPtr {
     var ret: i32 = undefined;
 
     reader = c.xmlReaderForFile(filename, null, 0) orelse {
-        std.debug.print("Unable to open {s}\n", .{filename});
+        print("Unable to open {s}\n", .{filename});
         return null;
     };
 

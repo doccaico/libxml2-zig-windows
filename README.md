@@ -1,10 +1,8 @@
 ## libxml2-zig-windows
 
-#### Fetch and Test
+#### Fetch
 ```sh
 $ zig fetch --save=libxml2 https://github.com/doccaico/libxml2-zig-windows/archive/<git-commit-hash>.tar.gz
-
-$ zig build reader1
 ```
 
 #### Usage
@@ -15,7 +13,7 @@ const c = @cImport({
     @cInclude("libxml/xmlreader.h");
 });
 
-～～～
+[your code ...]
 ```
 See more [examples](https://github.com/doccaico/libxml2-zig-windows/tree/main/examples)
 

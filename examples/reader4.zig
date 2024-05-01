@@ -1,8 +1,8 @@
 const std = @import("std");
 const panic = std.debug.panic;
+const print = std.debug.print;
 
 const c = @cImport({
-    @cDefine("LIBXML_READER_ENABLED", "1");
     @cInclude("libxml/xmlreader.h");
 });
 
@@ -13,20 +13,20 @@ fn processDoc(readerPtr: c.xmlTextReaderPtr) void {
     }
 
     const docPtr = c.xmlTextReaderCurrentDoc(readerPtr) orelse {
-        std.debug.print("failed to obtain document\n", .{});
+        print("failed to obtain document\n", .{});
         return;
     };
 
     const URL = docPtr.*.URL;
     if (URL == null)
-        std.debug.print("Failed to obtain URL\n", .{});
+        print("Failed to obtain URL\n", .{});
 
     if (ret != 0) {
-        std.debug.print("{s}: Failed to parse\n", .{URL});
+        print("{s}: Failed to parse\n", .{URL});
         return;
     }
 
-    std.debug.print("{s}: Processed ok\n", .{URL});
+    print("{s}: Processed ok\n", .{URL});
 }
 
 pub fn main() !void {

@@ -1,17 +1,16 @@
 const std = @import("std");
 const panic = std.debug.panic;
+const print = std.debug.print;
 
 const c = @cImport({
     @cInclude("libxml/xmlreader.h");
 });
 
-fn processNode(reader: c.xmlTextReaderPtr) !void {
-    const stdout = std.io.getStdOut().writer();
-
+fn processNode(reader: c.xmlTextReaderPtr) void {
     const name: [*:0]const u8 = c.xmlTextReaderConstName(reader) orelse "--";
     const value: ?[*:0]const u8 = c.xmlTextReaderConstValue(reader);
 
-    try stdout.print("{d} {d} {s} {d} {d}", .{
+    print("{d} {d} {s} {d} {d}", .{
         c.xmlTextReaderDepth(reader),
         c.xmlTextReaderNodeType(reader),
         name,
@@ -20,15 +19,15 @@ fn processNode(reader: c.xmlTextReaderPtr) !void {
     });
     if (value) |val| {
         if (c.xmlStrlen(value) > 40)
-            try stdout.print(" :{s}...\n", .{val})
+            print(" :{s}...\n", .{val})
         else
-            try stdout.print(" {s}\n", .{val});
+            print(" {s}\n", .{val});
     } else {
-        try stdout.print("\n", .{});
+        print("\n", .{});
     }
 }
 
-fn streamFile(filename: [:0]const u8) !void {
+fn streamFile(filename: [:0]const u8) void {
     var reader: c.xmlTextReaderPtr = undefined;
     var ret: i32 = undefined;
 
@@ -38,7 +37,7 @@ fn streamFile(filename: [:0]const u8) !void {
 
     ret = c.xmlTextReaderRead(reader);
     while (ret == 1) {
-        try processNode(reader);
+        processNode(reader);
         ret = c.xmlTextReaderRead(reader);
     }
     c.xmlFreeTextReader(reader);
@@ -47,9 +46,9 @@ fn streamFile(filename: [:0]const u8) !void {
     }
 }
 
-pub fn main() !void {
+pub fn main() void {
     const filename = "examples/test2.xml";
-    try streamFile(filename);
+    streamFile(filename);
 }
 
 // 0 10 doc 0 0

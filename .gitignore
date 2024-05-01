@@ -1,3 +1,2 @@
-zig-cache/
-zig-out/
-libxml2/
+/zig-cache
+/zig-out

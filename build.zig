@@ -6,20 +6,17 @@ pub const Version = struct {
     pub const minor = "12";
     pub const micro = "6";
 
-    pub fn number() []const u8 {
-        return comptime major ++ "0" ++ minor ++ micro;
-    }
-
-    pub fn string() []const u8 {
-        return comptime "\"" ++ number() ++ "\"";
+    pub fn number() i32 {
+        // the version number: 1.2.3 value is 10203
+        return 20126;
     }
 
     pub fn dottedString() []const u8 {
-        return comptime "\"" ++ major ++ "." ++ minor ++ "." ++ micro ++ "\"";
+        return comptime major ++ "." ++ minor ++ "." ++ micro;
     }
 
     pub fn extra() []const u8 {
-        return comptime "\"" ++ "-GITv" ++ major ++ "." ++ minor ++ "." ++ micro ++ "\"";
+        return comptime "-GITv" ++ major ++ "." ++ minor ++ "." ++ micro;
     }
 };
 
@@ -34,74 +31,106 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const libxml2 = b.addStaticLibrary(.{
+    const upstream = b.dependency("libxml2", .{});
+
+    const lib = b.addStaticLibrary(.{
         .name = "libxml2",
         .target = target,
         .optimize = optimize,
         .link_libc = true,
     });
+    lib.linkSystemLibrary("ws2_32");
 
-    var flags = std.ArrayList([]const u8).init(b.allocator);
-    defer flags.deinit();
+    const libxml2_config_h = b.addConfigHeader(.{
+        .style = .{ .cmake = upstream.path("config.h.cmake.in") },
+    }, .{
+        .ATTRIBUTE_DESTRUCTOR = "__attribute__((destructor))",
+        .HAVE_ARPA_INET_H = false,
+        .HAVE_ATTRIBUTE_DESTRUCTOR = true,
+        .HAVE_DLFCN_H = false,
+        .HAVE_DLOPEN = false,
+        .HAVE_DL_H = false,
+        .HAVE_FCNTL_H = true,
+        .HAVE_FTIME = true,
+        .HAVE_GETTIMEOFDAY = true,
+        .HAVE_INTTYPES_H = true,
+        .HAVE_ISASCII = true,
+        .HAVE_LIBHISTORY = false,
+        .HAVE_LIBREADLINE = false,
+        .HAVE_MMAP = false,
+        .HAVE_MUNMAP = false,
+        .HAVE_NETDB_H = false,
+        .HAVE_NETINET_IN_H = false,
+        .HAVE_POLL_H = false,
+        .HAVE_PTHREAD_H = false,
+        .HAVE_SHLLOAD = false,
+        .HAVE_STAT = true,
+        .HAVE_STDINT_H = true,
+        .HAVE_SYS_MMAN_H = false,
+        .HAVE_SYS_SELECT_H = false,
+        .HAVE_SYS_SOCKET_H = false,
+        .HAVE_SYS_STAT_H = true,
+        .HAVE_SYS_TIMEB_H = true,
+        .HAVE_SYS_TIME_H = true,
+        .HAVE_UNISTD_H = true,
+        .HAVE_VA_COPY = true,
+        .HAVE_ZLIB_H = false,
+        .HAVE___VA_COPY = true,
+        .SUPPORT_IP6 = false,
+        .VA_LIST_IS_ARRAY = true,
+        .VERSION = Version.number(),
+        .XML_SOCKLEN_T = "int",
+        .XML_THREAD_LOCAL = null,
+        ._UINT32_T = null,
+        .uint32_t = null,
+    });
+    lib.addConfigHeader(libxml2_config_h);
 
-    try flags.appendSlice(&.{
-        // Version info, hardcoded
-        comptime "-DLIBXML_VERSION=" ++ Version.number(),
-        comptime "-DLIBXML_VERSION_STRING=" ++ Version.string(),
-        comptime "-DLIBXML_DOTTED_VERSION=" ++ Version.dottedString(),
-        comptime "-DLIBXML_VERSION_EXTRA=" ++ Version.extra(),
+    const libxml2_xmlversion_h = b.addConfigHeader(.{
+        .style = .{ .cmake = upstream.path("include/libxml/xmlversion.h.in") },
+        .include_path = "libxml/xmlversion.h",
+    }, .{
+        .VERSION = Version.dottedString(),
+        .LIBXML_VERSION_NUMBER = Version.number(),
+        .LIBXML_VERSION_EXTRA = Version.extra(),
+        .WITH_TRIO = false,
+        .WITH_THREADS = true,
+        .WITH_THREAD_ALLOC = false,
+        .WITH_TREE = true,
+        .WITH_OUTPUT = true,
+        .WITH_PUSH = true,
+        .WITH_READER = true,
+        .WITH_PATTERN = true,
+        .WITH_WRITER = true,
+        .WITH_SAX1 = true,
+        .WITH_FTP = false,
+        .WITH_HTTP = false,
+        .WITH_VALID = true,
+        .WITH_HTML = true,
+        .WITH_LEGACY = false,
+        .WITH_C14N = true,
+        .WITH_CATALOG = true,
+        .WITH_XPATH = true,
+        .WITH_XPTR = true,
+        .WITH_XPTR_LOCS = false,
+        .WITH_XINCLUDE = true,
+        .WITH_ICONV = false,
+        .WITH_ICU = false,
+        .WITH_ISO8859X = true,
+        .WITH_DEBUG = true,
+        .WITH_MEM_DEBUG = false,
+        .WITH_REGEXPS = true,
+        .WITH_SCHEMAS = true,
+        .WITH_SCHEMATRON = true,
+        .WITH_MODULES = true,
+        .MODULE_EXTENSION = target.result.dynamicLibSuffix(),
+        .WITH_ZLIB = false,
+        .WITH_LZMA = false,
+    });
+    lib.addConfigHeader(libxml2_xmlversion_h);
+    lib.installConfigHeader(libxml2_xmlversion_h);
 
-        // These might now always be true (particularly Windows) but for
-        // now we just set them all. We should do some detection later.
-        "-DSEND_ARG2_CAST=",
-        "-DGETHOSTBYNAME_ARG_CAST=",
-        "-DGETHOSTBYNAME_ARG_CAST_CONST=",
-
-        // Always on
-        "-DLIBXML_STATIC=1",
-        "-DLIBXML_AUTOMATA_ENABLED=1",
-        // "-DLIBXML_EXPR_ENABLED=1",
-        "-DWITHOUT_TRIO=1",
-        "-DLIBXML_UNICODE_ENABLED=1",
-        //
-
-        // Options
-        "-DLIBXML_C14N_ENABLED=1",
-        "-DLIBXML_CATALOG_ENABLED=1",
-        "-DLIBXML_DEBUG_ENABLED=1",
-        // "-DLIBXML_FTP_ENABLED=0",
-        "-DLIBXML_HTML_ENABLED=1",
-        // "-DLIBXML_HTTP_ENABLED=1",
-        // "-DLIBXML_ICONV_ENABLED=1",
-        // "-DLIBXML_ICU_ENABLED=0",
-        "-DLIBXML_ISO8859X_ENABLED=1",
-        // "-DLIBXML_LEGACY_ENABLED=0",
-        // "-DLIBXML_LZMA_ENABLED=1",
-        // "-DLIBXML_MEM_DEBUG_ENABLED=0",
-        "-DLIBXML_MODULES_ENABLED=1",
-        "-DLIBXML_OUTPUT_ENABLED=1",
-        "-DLIBXML_PATTERN_ENABLED=1",
-        "-DLIBXML_PROGRAMS_ENABLED=1",
-        "-DLIBXML_PUSH_ENABLED=0",
-        // "-DLIBXML_PYTHON_ENABLED=1",
-        "-DLIBXML_READER_ENABLED=1",
-        "-DLIBXML_REGEXPS_ENABLED=1",
-        "-DLIBXML_REGEXP_ENABLED=1",
-        "-DLIBXML_SAX1_ENABLED=1",
-        "-DLIBXML_SCHEMAS_ENABLED=1",
-        "-DLIBXML_SCHEMATRON_ENABLED=1",
-        // "-DLIBXML_TESTS_ENABLED=1",
-        "-DLIBXML_THREADS_ENABLED=1",
-        // "-DLIBXML_THREAD_ALLOC_ENABLED=0",
-        // "-DLIBXML_TLS_ENABLED=0",
-        "-DLIBXML_TREE_ENABLED=1",
-        "-DLIBXML_VALID_ENABLED=1",
-        "-DLIBXML_WRITER_ENABLED=1",
-        "-DLIBXML_XINCLUDE_ENABLED=1",
-        "-DLIBXML_XPATH_ENABLED=1",
-        "-DLIBXML_XPTR_ENABLED=1",
-        // "-DLIBXML_XPTR_LOCS_ENABLED=0",
-        // "-DLIBXML_ZLIB_ENABLED=1",
+    const flags = &.{
         "-pedantic",
         "-Wall",
         "-Wextra",
@@ -113,22 +142,62 @@ pub fn build(b: *std.Build) !void {
         "-Wmissing-prototypes",
         "-Wno-long-long",
         "-Wno-format-extra-args",
-        // For remove compile errors...
-        // (xmlIO.c) declaration of 'struct _stat' will not be visible outside of this function
-        // (xmlIO.c) call to undeclared function '_wstat'; ISO C99 and later do not support implicit
-        // (xmlIO.c) call to undeclared function '_stat'; ISO C99 and later do not support implicit
-        "-Wno-implicit-function-declaration",
+    };
+    const srcs = &.{
+        "buf.c",
+        "c14n.c",
+        "catalog.c",
+        "chvalid.c",
+        "debugXML.c",
+        "dict.c",
+        "encoding.c",
+        "entities.c",
+        "error.c",
+        "globals.c",
+        "hash.c",
+        "HTMLparser.c",
+        "HTMLtree.c",
+        "legacy.c",
+        "list.c",
+        // "nanoftp.c", // FTP
+        "nanohttp.c",
+        "parser.c",
+        "parserInternals.c",
+        "pattern.c",
+        "relaxng.c",
+        "SAX.c",
+        "SAX2.c",
+        "schematron.c",
+        "threads.c",
+        "tree.c",
+        "uri.c",
+        "valid.c",
+        "xinclude.c",
+        "xlink.c",
+        "xmlIO.c",
+        "xmlmemory.c",
+        "xmlmodule.c",
+        "xmlreader.c",
+        "xmlregexp.c",
+        "xmlsave.c",
+        "xmlschemas.c",
+        "xmlschemastypes.c",
+        "xmlstring.c",
+        "xmlunicode.c",
+        "xmlwriter.c",
+        "xpath.c",
+        "xpointer.c",
+        // "xzlib.c", // Zlib
+    };
+    lib.addCSourceFiles(.{ .root = upstream.path("."), .files = srcs, .flags = flags });
+
+    lib.addIncludePath(upstream.path("include"));
+
+    lib.installHeadersDirectory(upstream.path("include/libxml"), "libxml", .{
+        .include_extensions = &.{".h"},
     });
 
-    libxml2.addCSourceFiles(.{ .files = srcs, .flags = flags.items });
-
-    libxml2.addIncludePath(.{ .path = "include" });
-    libxml2.addIncludePath(.{ .path = include_dir });
-    libxml2.addIncludePath(.{ .path = override_include_dir });
-    libxml2.addIncludePath(.{ .path = win32_include_dir });
-    libxml2.linkSystemLibrary("ws2_32");
-
-    b.installArtifact(libxml2);
+    b.installArtifact(lib);
 
     // examples
     const examples_step = b.step("examples", "Builds all the examples");
@@ -171,11 +240,7 @@ pub fn build(b: *std.Build) !void {
             exe.addCSourceFile(.{ .file = .{ .path = example.wrapper }, .flags = &.{} });
         }
 
-        exe.addIncludePath(.{ .path = "include" });
-        exe.addIncludePath(.{ .path = include_dir });
-        exe.addIncludePath(.{ .path = override_include_dir });
-        exe.addIncludePath(.{ .path = win32_include_dir });
-        exe.linkLibrary(libxml2);
+        exe.linkLibrary(lib);
 
         const run_cmd = b.addRunArtifact(exe);
         const run_step = b.step(example.name, example.desc);
@@ -183,55 +248,3 @@ pub fn build(b: *std.Build) !void {
         examples_step.dependOn(&exe.step);
     }
 }
-
-/// Directories with our includes.
-const include_dir = "libxml2/include";
-const override_include_dir = "override/include";
-const win32_include_dir = "override/config/win32";
-
-const srcs = &.{
-    "libxml2/buf.c",
-    "libxml2/c14n.c",
-    "libxml2/catalog.c",
-    "libxml2/chvalid.c",
-    "libxml2/debugXML.c",
-    "libxml2/dict.c",
-    "libxml2/encoding.c",
-    "libxml2/entities.c",
-    "libxml2/error.c",
-    "libxml2/globals.c",
-    "libxml2/hash.c",
-    "libxml2/HTMLparser.c",
-    "libxml2/HTMLtree.c",
-    "libxml2/legacy.c",
-    "libxml2/list.c",
-    "libxml2/nanoftp.c",
-    "libxml2/nanohttp.c",
-    "libxml2/parser.c",
-    "libxml2/parserInternals.c",
-    "libxml2/pattern.c",
-    "libxml2/relaxng.c",
-    "libxml2/SAX.c",
-    "libxml2/SAX2.c",
-    "libxml2/schematron.c",
-    "libxml2/threads.c",
-    "libxml2/tree.c",
-    "libxml2/uri.c",
-    "libxml2/valid.c",
-    "libxml2/xinclude.c",
-    "libxml2/xlink.c",
-    "libxml2/xmlIO.c",
-    "libxml2/xmlmemory.c",
-    "libxml2/xmlmodule.c",
-    "libxml2/xmlreader.c",
-    "libxml2/xmlregexp.c",
-    "libxml2/xmlsave.c",
-    "libxml2/xmlschemas.c",
-    "libxml2/xmlschemastypes.c",
-    "libxml2/xmlstring.c",
-    "libxml2/xmlunicode.c",
-    "libxml2/xmlwriter.c",
-    "libxml2/xpath.c",
-    "libxml2/xpointer.c",
-    "libxml2/xzlib.c",
-};

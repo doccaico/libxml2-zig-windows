@@ -1,0 +1,16 @@
+.{
+    .name = "zig-libxml2",
+    .version = "0.0.0",
+    .paths = .{
+        "LICENSE",
+        "README.md",
+        "build.zig",
+        "build.zig.zon",
+    },
+    .dependencies = .{
+        .libxml2 = .{
+            .url = "https://github.com/doccaico/libxml2/archive/a42c161c7eac37a40884e794beb20b563f27ec1a.tar.gz",
+            .hash = "1220b3f3576cd4c2179aad9a1bdc78c6f2a871e46e4a58710ff169ad50f8b036b61d",
+        },
+    },
+}

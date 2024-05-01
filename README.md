@@ -21,6 +21,9 @@ See more [examples](https://github.com/doccaico/libxml2-zig-windows/tree/main/ex
 
 #### Tests
 ```sh
+$ git clone https://github.com/doccaico/libxml2-zig-windows.git
+$ cd libxml2-zig-windows
+
 # Builds all the examples
 $ zig build examples
 

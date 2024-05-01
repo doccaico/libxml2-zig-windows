@@ -2,7 +2,6 @@ const std = @import("std");
 const panic = std.debug.panic;
 
 const c = @cImport({
-    // @cDefine("LIBXML_READER_ENABLED", "1");
     @cInclude("libxml/xmlreader.h");
 });
 

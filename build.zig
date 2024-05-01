@@ -215,6 +215,12 @@ pub fn build(b: *std.Build) !void {
             .wrapper = "",
         },
         .{
+            .name = "parse3",
+            .path = "examples/parse3.zig",
+            .desc = "Parse an XML document in memory to a tree and free it",
+            .wrapper = "",
+        },
+        .{
             .name = "reader1",
             .path = "examples/reader1.zig",
             .desc = "Parse an XML file with an xmlReader",

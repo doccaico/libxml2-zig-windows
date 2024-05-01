@@ -34,7 +34,7 @@ $ cd libxml2-zig-windows
 # Builds all the examples
 $ zig build examples
 
-# To list available
+# To list available examples
 $ zig build --help
 ```
 

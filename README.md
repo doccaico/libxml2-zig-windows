@@ -1,6 +1,6 @@
 ## libxml2-zig-windows
 
-This binding tested on libxml2 2.12.6 and Zig master version. It's Windows only.
+This binding tested on libxml2 [2.12.6](https://github.com/GNOME/libxml2/tree/v2.12.6) and Zig master version. It's Windows only.
 
 #### Fetch
 ```sh
@@ -14,7 +14,7 @@ $ zig fetch --save=libxml2 https://github.com/doccaico/libxml2-zig-windows/archi
 const libxml2 = b.dependency("libxml2", .{ .target = target, .optimize = optimize });
 exe.linkLibrary(libxml2.artifact("libxml2"));
 
-// src\main.zig
+// src/main.zig
 
 const std = @import("std");
 

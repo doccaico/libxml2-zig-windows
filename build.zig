@@ -24,7 +24,7 @@ const Program = struct {
     name: []const u8,
     path: []const u8,
     desc: []const u8,
-    wrapper: []const u8,
+    wrapper: bool = false,
 };
 
 pub fn build(b: *std.Build) !void {
@@ -206,49 +206,42 @@ pub fn build(b: *std.Build) !void {
             .name = "parse1",
             .path = "examples/parse1.zig",
             .desc = "Parse an XML file to a tree and free it",
-            .wrapper = "",
         },
         .{
             .name = "parse2",
             .path = "examples/parse2.zig",
             .desc = "Parse and validate an XML file to a tree and free the result",
-            .wrapper = "",
         },
         .{
             .name = "parse3",
             .path = "examples/parse3.zig",
             .desc = "Parse an XML document in memory to a tree and free it",
-            .wrapper = "",
         },
         .{
             .name = "parse4",
             .path = "examples/parse4.zig",
             .desc = "Parse an XML document chunk by chunk to a tree and free it",
-            .wrapper = "",
         },
         .{
             .name = "reader1",
             .path = "examples/reader1.zig",
             .desc = "Parse an XML file with an xmlReader",
-            .wrapper = "",
         },
         .{
             .name = "reader2",
             .path = "examples/reader2.zig",
             .desc = "Parse and validate an XML file with an xmlReader",
-            .wrapper = "",
         },
         .{
             .name = "reader3",
             .path = "examples/reader3.zig",
             .desc = "Show how to extract subdocuments with xmlReader",
-            .wrapper = "examples/reader3.c", // For stdout (stdio.h)
+            .wrapper = true, // For stdout (stdio.h)
         },
         .{
             .name = "reader4",
             .path = "examples/reader4.zig",
             .desc = "Parse multiple XML files reusing an xmlReader",
-            .wrapper = "",
         },
     };
     for (examples) |example| {
@@ -259,9 +252,9 @@ pub fn build(b: *std.Build) !void {
             .optimize = optimize,
         });
 
-        if (example.wrapper.len != 0) {
+        if (example.wrapper) {
+            exe.addCSourceFile(.{ .file = .{ .path = "examples/wrapper.c" }, .flags = &.{} });
             exe.addIncludePath(.{ .path = "." });
-            exe.addCSourceFile(.{ .file = .{ .path = example.wrapper }, .flags = &.{} });
         }
 
         exe.linkLibrary(lib);

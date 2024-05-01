@@ -3,7 +3,7 @@ const panic = std.debug.panic;
 const print = std.debug.print;
 
 const c = @cImport({
-    @cInclude("examples/reader3.h");
+    @cInclude("examples/wrapper.h");
 
     @cInclude("libxml/xmlreader.h");
 });

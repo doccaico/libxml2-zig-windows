@@ -203,6 +203,11 @@ pub fn build(b: *std.Build) !void {
     const examples_step = b.step("examples", "Builds all the examples");
     const examples = [_]Program{
         .{
+            .name = "xpath1",
+            .path = "examples/xpath1.zig",
+            .desc = "Evaluate XPath expression and prints result node set",
+        },
+        .{
             .name = "parse1",
             .path = "examples/parse1.zig",
             .desc = "Parse an XML file to a tree and free it",
